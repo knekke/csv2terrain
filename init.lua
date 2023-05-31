@@ -1,5 +1,52 @@
 -- See the README for information
 
+
+function get_node_names ()
+	-- Open the output file in write mode
+	local file = io.open(minetest.get_modpath("csv2terrain").."/block_names.txt", "w")
+
+	-- Iterate over all registered nodes
+	for name, def in pairs(minetest.registered_nodes) do
+	  -- Write the block name to the file
+	  file:write(name .. "\n")
+	end
+
+	-- Close the file
+	file:close()
+
+end
+
+-- Function to read the block names from the file and store them in a set
+local function readBlockNames()
+  local blockNames = {}
+
+  -- Open the file in read mode
+  local file = io.open(minetest.get_modpath("csv2terrain").."/block_names.txt", "r")
+
+  -- Read the file line by line
+  local x = 1
+  local result = ""
+  for line in file:lines() do
+
+    -- Strip line breaks and leading/trailing whitespaces
+    line = line:gsub("^%s*(.-)%s*$", "%1")
+    a = string.match(line, ":(.+)")
+    -- print(a)
+    -- Add the block name to the set
+    if a ~= nil then
+      blockNames[a] = line
+    end
+    x  = x+1
+  end
+
+  -- Close the file
+  file:close()
+  return blockNames
+end
+
+
+
+
 function csv2terrain ()
 
 	for line in io.lines(minetest.get_modpath("csv2terrain").."/blocks.csv")  do
@@ -20,6 +67,9 @@ function csv2terrain ()
  	local area = VoxelArea:new{MinEdge=edge0, MaxEdge=edge1}
   	local data = manip:get_data()
 
+  	local blockNames = readBlockNames()
+  	-- minetest.log(blockNames[1])
+
   	for line in io.lines(minetest.get_modpath("csv2terrain").."/blocks.csv")  do
     	local x, y, z, block = line:match("%s*(.-),%s*(.-),%s*(.-),%s*(.-),")
 	z = z1 - z + z0
@@ -27,12 +77,17 @@ function csv2terrain ()
    		if block~="min" and block~="max" and block~="player" then
 			if block=="air" then
 				data[j] = minetest.get_content_id (block)
-			elseif string.find(block, "stair_") or string.find(block, "slab_") then
-				data[j] = minetest.get_content_id ("stairs:"..block)
-			elseif block=="white" or block=="grey" or block=="dark_grey" or block=="black" or block=="blue" or block=="cyan" or block=="green" or block=="dark_green" or block=="yellow" or block=="orange" or block=="brown" or block=="red" or block=="pink" or block=="magenta" or block=="violet" then
-				data[j] = minetest.get_content_id ("wool:"..block)
 			else
-				data[j] = minetest.get_content_id ("default:"..block)
+				if blockNames[block] ~= nil then
+					data[j] = minetest.get_content_id (blockNames[block])
+					-- minetest.log(blockNames[block])
+					-- print(blockNames[block])
+
+				else
+					data[j] = minetest.get_content_id ("mcl_bamboo:bamboo")
+					-- print("Block name not found: " .. block)
+					minetest.log("Block name not found: " .. block)
+				end
 			end
 		end
  	 end
@@ -114,6 +169,10 @@ minetest.register_chatcommand("ltbv", {
 
 minetest.register_chatcommand("ltba", {
     func = csv2air,
+})
+
+minetest.register_chatcommand("ltbn", {
+    func = get_node_names,
 })
 
 minetest.clear_registered_biomes() 
