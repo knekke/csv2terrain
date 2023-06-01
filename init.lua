@@ -80,7 +80,7 @@ function csv2terrain ()
 			else
 				if blockNames[block] ~= nil then
 					data[j] = minetest.get_content_id (blockNames[block])
-					-- minetest.log(blockNames[block])
+					minetest.log(blockNames[block])
 					-- print(blockNames[block])
 
 				else
