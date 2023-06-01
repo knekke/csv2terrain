@@ -72,7 +72,7 @@ function csv2terrain ()
 
   	for line in io.lines(minetest.get_modpath("csv2terrain").."/blocks.csv")  do
     	local x, y, z, block = line:match("%s*(.-),%s*(.-),%s*(.-),%s*(.-),")
-	z = z1 - z + z0
+		--z = z1 - z + z0
         local j = area:index(tonumber(x), tonumber(y), tonumber(z))
    		if block~="min" and block~="max" and block~="player" then
 			if block=="air" then
